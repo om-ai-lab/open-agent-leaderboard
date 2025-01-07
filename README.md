@@ -1,8 +1,34 @@
 # Open Agent Leaderboard
 
-This project is used to evaluate the performance of different models on various datasets.
+This project aims to provide a fair comparison of various agents by evaluating their performance on different datasets and LLMs. Built on top of the [OmAgent](https://github.com/om-ai-lab/OmAgent) framework, it allows for simple, quick, and accurate assessments of agents. 
 
-## Installation
+## Leaderboards
+
+**Math tasks**
+| **Rank** | **Algorithm** | **Eval Time** | **LLM**         | **Average** | **gsm8k-score** | **gsm8k-cost($)** | **AQuA-score** | **AQuA-cost($)** |
+|:--------:|:-------------:|:-------------:|:---------------:|:-----------:|:---------------:|:--------------:|:--------------:|:-------------:|
+| **8**    | IO            | 2025/1/7      | gpt-3.5-turbo   | 33.02       | 27.07           |                | 38.98          | 0.0380        |
+| **4**    | COT           | 2025/1/7      | gpt-3.5-turbo   | 69.86       | 78.70           | 0.6788         | 61.02          | 0.0957        |
+| **3**    | SC-COT        | 2025/1/7      | gpt-3.5-turbo   | 72.71       | 80.06           | 5.0227         | 65.35          | 0.6491        |
+| **6**    | POT           | 2025/1/7      | gpt-3.5-turbo   | 64.42       | 76.88           | 0.6846         | 51.97          | 0.1557        |
+| **5**    | ReAct-Pro*     | 2025/1/7      | gpt-3.5-turbo   | 69.74       | 74.91           | 3.4633         | 64.57          | 0.4928        |
+| **7**    | DNC           | 2025/1/7      | gpt-3.5-turbo   | 37.12       | 51.40           | 1.2895         | 22.83          | 1.3372        |
+| **2**    | IO            | 2025/1/7      | Doubao-lite-32k | 75.58       | 72.02           | 0.0354         | 79.13          | 0.0058        |
+| **1**    | COT           | 2025/1/7      | Doubao-lite-32k | 85.99       | 89.31           | 0.0557         | 82.68          | 0.0066        |
+| **10**   | SC-COT        | 2025/1/7      | Doubao-lite-32k | 0.00        | 0.00            | 0.000          | 0.00           | 0.000         |
+| **9**    | POT           | 2025/1/7      | Doubao-lite-32k | 26.18       | 0.00            | 0.000          | 52.36          | 0.0142        |
+| **10**   | ReAct-Pro*     | 2025/1/7      | Doubao-lite-32k | 0.00        | 0.00            | 0.000          | 0.00           | 0.000         |
+| **10**   | DNC           | 2025/1/7      | Doubao-lite-32k | 0.00        | 0.00            | 0.000          | 0.00           | 0.000         |
+
+
+Evaluation details can be found in the [Evaluation Details](#evaluation-details) section.
+
+*Note: We improved ReAct to ReAct-Pro, following the [Reflexion](https://github.com/noahshinn/reflexion) repository. Comparasion with the original ReAct repo can be found in the [Compare to ReAct](#comparison-react-with-react-pro) section.
+
+
+
+
+## How to Install
 
 1. Clone the repository:
     ```bash
@@ -15,40 +41,30 @@ This project is used to evaluate the performance of different models on various 
     pip install -r requirements.txt
     ```
 
-## Usage
+## How to Evaluate Agents
+### Step 1. Implement your agent in the  [`omagent`](https://github.com/om-ai-lab/OmAgent)  repository
 
-Run the main script to perform evaluations:
+Navigate to the agent repository:
 
-```bash
-python main.py --dataset <dataset_name> --model <model_name> --method <method_name> --output_dir <output_directory>
-```
+    git clone https://github.com/om-ai-lab/OmAgent.git
+    cd OmAgent
+    
 
-### Parameters
+Set up the environment:
 
-- `--random_seed`: Random seed, default is 1.
-- `--dataset`: Dataset to use, options are `aqua`, `gsm8k`, `hotpotqa`.
-- `--minibatch_size`: Minibatch size, default is 1.
-- `--max_num_worker`: Maximum number of workers for the data loader, default is 4.
-- `--model`: Model used for decoding, options are `gpt-4o-mini`, `gpt-4o`, `gpt-3.5-turbo`.
-- `--method`: Method, options are `zero_shot`, `zero_shot_cot`, `few_shot`, `few_shot_cot`.
-- `--cot_trigger_no`: Trigger sentence number for chain of thought, default is 1.
-- `--max_length`: Maximum length of model output, default is 2048.
-- `--max_length_direct`: Maximum length of direct model answer, default is 32.
-- `--limit_dataset_size`: Whether to limit the test dataset size, default is 0 (no limit).
-- `--output_dir`: Output directory, default is `./outputs/`.
-- `--output_path`: Output path, default is empty.
-- `--agent`: Agent used for the experiment, options are `cot`, `pot`, `sc_cot`, `react`, `dnc`.
-- `--system_prompt`: System prompt, default is empty.
-- `--openai_api_key`: OpenAI API key, default is empty.
-- `--openai_url`: OpenAI API URL, default is `https://api.openai.com/v1`.
+    pip install -e omagent-core
 
-## Example
 
-```bash
-python main.py --output_path example/gsm8k_results_cot.json --dataset gsm8k --method few_shot_cot
-```
+Implement your agent in the  [`omagent`](https://github.com/om-ai-lab/OmAgent)  repository,check the `examples/cot` folder.
+    
+### Step 2. Inference in OmAgent Repository
 
-## Output Format
+Run the inference script (cot as an example):
+
+    cd examples/cot
+    python eval_demo.py --model_id your_model_id --dataset_name your_dataset_name --dataset_path your_dataset_path --output_path your_output_path --output_name your_output_name --cot_method your_cot_method
+
+#### Output Format
 
 The output results are saved in JSON format and include the following fields:
 
@@ -76,33 +92,128 @@ Example of an output JSON file:
             "ground_truth": "Paris",
             "prompt_tokens": 10,
             "completion_tokens": 5
-        },
-        // ... more results ...
+        }
     ]
 }
 ```
 
-## Running in OmAgent Repository
 
-To run the evaluation in the omagent repository, follow these steps:
 
-1. Navigate to the agent repository:
-    ```bash
-    cd open-agent-leaderboard
-    git clone https://github.com/om-ai-lab/OmAgent.git
-    cd OmAgent
-    ```
 
-2. Set up the environment:
-    ```bash
-    pip install -e omagent-core
-    ```
 
-3. Run the evaluation script:
-    ```bash
-    cd examples/cot
-    python eval_demo.py --model_id your_model_id --dataset_name your_dataset_name --dataset_path your_dataset_path --output_path your_output_path --output_name your_output_name --cot_method your_cot_method
-    ```
+
+
+### Step 3. Evaluate inference results
+
+Run the main script to perform evaluations:
+
+```bash
+python main.py --dataset <dataset_name> --model <model_name> --method <method_name> --output_dir <output_directory>
+```
+
+#### Parameters
+
+- `--random_seed`: Random seed, default is 1.
+- `--dataset`: Dataset to use, options are `aqua`, `gsm8k`.
+- `--minibatch_size`: Minibatch size, default is 1.
+- `--max_num_worker`: Maximum number of workers for the data loader, default is 4.
+- `--model`: Model used for decoding, options are `gpt-4o-mini`, `gpt-4o`, `gpt-3.5-turbo`.
+- `--method`: Method, options are `zero_shot`, `zero_shot_cot`, `few_shot`, `few_shot_cot`.
+- `--cot_trigger_no`: Trigger sentence number for chain of thought, default is 1.
+- `--max_length`: Maximum length of model output, default is 2048.
+- `--max_length_direct`: Maximum length of direct model answer, default is 32.
+- `--limit_dataset_size`: Whether to limit the test dataset size, default is 0 (no limit).
+- `--output_dir`: Output directory, default is `./outputs/`.
+- `--output_path`: Output path, default is empty.
+- `--agent`: Agent used for the experiment, options are `cot`, `pot`, `sc_cot`, `react`, `dnc`.
+- `--system_prompt`: System prompt, default is empty.
+- `--openai_api_key`: OpenAI API key, default is empty.
+- `--openai_url`: OpenAI API URL, default is `https://api.openai.com/v1`.
+
+#### Example
+
+```bash
+python main.py --output_path example/gsm8k_results_cot.json --dataset gsm8k --method few_shot_cot
+```
+
+
+
+
+### Evaluation details
+| **Algorithm** | **dataset** | **Eval Time** | **llm**         | **score** | **pass rete** | **X-shot** | **Parameters**            | **Samples** | **Total input tokens** | **Average input tokens** | **Total output tokens** | **Average output tokens** | **All tokens** | **Cost ($)** |
+|:-------------:|:-----------:|:-------------:|:---------------:|:---------:|:-------------:|:----------:|:-------------------------:|:--------:|:----------------------:|:------------------------:|:-----------------------:|:-------------------------:|:--------------:|:------------:|
+| **IO**        | gsm8k       | 2025/1/7      | gpt-4o-mini     | 86.20     |               | 8          |                           | 1319     | 542,416                | 411                      | 273,995                 | 208                       | 816,411        | 0.6822       |
+| **COT**       | gsm8k       | 2025/1/7      | gpt-4o-mini     | 90.37     |               | 8          |                           | 1319     |                        |                          |                         |                           | 1,195,118      |              |
+| **IO**        | gsm8k       | 2025/1/7      | gpt-3.5-turbo   | 27.07     | 99.92         | 8          |                           | 1319     |                        |                          |                         |                           |                |              |
+| **IO**        | gsm8k       | 2025/1/7      | Doubao-lite-32k |           |               | 8          |                           | 1319     |                        |                          |                         |                           |                |              |
+| **COT**       | gsm8k       | 2025/1/7      | gpt-3.5-turbo   | 78.70     | 100.00        | 8          |                           | 1319     | 953,242                | 723                      | 134,799                 | 102                       | 1,088,041      | 0.6788       |
+| **COT**       | gsm8k       | 2025/1/7      | Doubao-lite-32k |           |               |            |                           |          |                        |                          |                         |                           |                |              |
+| **SC-COT**    | gsm8k       | 2025/1/7      | gpt-3.5-turbo   | 80.06     | 99.62         | 8          | temperature=1, path_num=5 | 1319     | 5,260,319              | 3,988                    | 1,595,016               | 1,209                     | 6,855,335      | 5.0227       |
+| **SC-COT**    | gsm8k       | 2025/1/7      | Doubao-lite-32k |           |               |            | temperature=1, path_num=5 |          |                        |                          |                         |                           |                |              |
+| **POT**       | gsm8k       | 2025/1/7      | gpt-3.5-turbo   | 76.88     | 99.24         | 8          |                           | 1319     | 1,082,008              | 827                      | 95,707                  | 73                        | 1,177,715      | 0.6846       |
+| **POT**       | gsm8k       | 2025/1/7      | Doubao-lite-32k |           |               |            |                           |          |                        |                          |                         |                           |                |              |
+| **ReAct-Pro** | gsm8k       | 2025/1/7      | gpt-3.5-turbo   | 74.91     | 99.39         | 8          | max_steps=10              | 1319     | 6,506,164              | 4,933                    | 140,122                 | 106                       | 6,646,286      | 3.4633       |
+| **ReAct**     | gsm8k       | 2025/1/7      | Doubao-lite-32k |           |               |            |                           |          |                        |                          |                         |                           |                |              |
+| **DNC**       | gsm8k       | 2025/1/7      | gpt-3.5-turbo   | 51.40     | 100.00        | 8          |                           | 1319     | 2,140,342              | 1,623                    | 146,193                 | 111                       | 2,286,535      | 1.2895       |
+| **DNC**       | gsm8k       | 2025/1/7      | Doubao-lite-32k |           |               |            |                           |          |                        |                          |                         |                           |                |              |
+| **IO**        | AQuA        | 2025/1/7      | gpt-3.5-turbo   | 38.98     | 100.00        | 0          |                           | 254      | 25,701                 | 101                      | 16,770                  | 66                        | 42,471         | 0.0380       |
+| **IO**        | AQuA        | 2025/1/7      | Doubao-lite-32k | 79.13     |               | 0          |                           | 254      | 33,058                 | 130                      | 54,684                  | 215                       | 87,742         | 0.0986       |
+| **COT**       | AQuA        | 2025/1/7      | gpt-3.5-turbo   | 61.02     |               | 0          |                           | 254      | 25,447                 | 100                      | 55,346                  | 218                       | 80,793         | 0.0957       |
+| **COT**       | AQuA        | 2025/1/7      | Doubao-lite-32k | 82.68     | 97.24         | 0          |                           | 254      | 27,978                 | 110                      | 66,599                  | 262                       | 94,577         | 0.1139       |
+| **SC-COT**    | AQuA        | 2025/1/7      | gpt-3.5-turbo   | 65.35     |               | 0          | temperature=1, path_num=5 | 254      | 219,241                | 863                      | 359,629                 | 1,416                     | 578,870        | 0.6491       |
+| **SC-COT**    | AQuA        | 2025/1/7      | Doubao-lite-32k |           |               |            | temperature=1, num_path=5 |          |                        |                          |                         |                           |                |              |
+| **POT**       | AQuA        | 2025/1/7      | gpt-3.5-turbo   | 51.97     |               | 0          |                           | 254      | 223,438                | 880                      | 29,323                  | 115                       | 252,761        | 0.1557       |
+| **POT**       | AQuA        | 2025/1/7      | Doubao-lite-32k | 52.36     | 82.28         | 0          |                           | 254      | 256,721                | 1,011                    | 44,729                  | 176                       | 301,450        | 0.1955       |
+| **ReAct-Pro** | AQuA        | 2025/1/7      | gpt-3.5-turbo   | 64.57     | 98.03         | 0          | max_steps=10              | 254      | 862,614                | 3,396                    | 40,973                  | 161                       | 903,587        | 0.4928       |
+| **ReAct-Pro** | AQuA        | 2025/1/7      | Doubao-lite-32k |           |               |            |                           |          |                        |                          |                         |                           |                |              |
+| **DNC**       | AQuA        | 2025/1/7      | gpt-3.5-turbo   | 22.83     | 40.16         | 0          |                           | 254      | 2,110,485              | 8,309                    | 187,971                 | 740                       | 2,298,456      | 1.3372       |
+
+
+Default settings:
+```
+temperature = 0
+```
+
+LLM prices:
+- gpt-3.5-turbo: 
+    - 0.0005$/1M tokens (input)
+	- 0.0015$/1M tokens (output)
+- Doubao-lite-32k（1 USD = 7.3249 CNY）: 
+    - 0.00004096$/1M tokens  (input)
+	- 0.0001$/1M tokens  (output)
+
+
+### Compare to original agent repositories
+| **Algorithm** | **dataset** | **Eval Time** | **llm**       | **framework** | **score** |
+|:-------------:|:-----------:|:-------------:|:-------------:|:-------------:|:---------:|
+| **COT**       | gsm8k       | 2025/1/7      | gpt-3.5-turbo | Original repo | 79.226    |
+| **COT**       | gsm8k       | 2025/1/7      | gpt-3.5-turbo | OmAgent       | 78.848    |
+| **COT**       | AQuA        | 2025/1/7      | gpt-3.5-turbo | Original repo | 60.630    |
+| **COT**       | AQuA        | 2025/1/7      | gpt-3.5-turbo | OmAgent       | 61.024    |
+| **POT**       | gsm8k       | 2025/1/7      | gpt-4o-mini   | Original repo | 86.353    |
+| **POT**       | gsm8k       | 2025/1/7      | gpt-4o-mini   | OmAgent       | 88.248    |
+| **ReAct**     | AQuA        | 2025/1/7      | gpt-3.5-turbo | Original repo | 35.039    |
+| **ReAct**     | AQuA        | 2025/1/7      | gpt-3.5-turbo | OmAgent       | 34.252    |
+
+Note:
+- The original repo is the official repository of the agent implementation.
+- OmAgent is the implementation of the agent in this project.
+- There is no official implementation of SC-COT.
+
+### Comparison ReAct with ReAct-Pro
+
+| **Algorithm** | **dataset** | **Eval Time** | **llm**       | **score** | **pass rete** |
+|:-------------:|:-----------:|:-------------:|:-------------:|:---------:|:-------------:|
+| **ReAct**     | gsm8k       | 2025/1/7      | gpt-3.5-turbo | 38.135    | 100.000       |
+| **ReAct-Pro** | gsm8k       | 2025/1/7      | gpt-3.5-turbo | 74.905    | 99.393        |
+| **ReAct**     | AQuA        | 2025/1/7      | gpt-3.5-turbo | 34.252    |               |
+| **ReAct-Pro** | AQuA        | 2025/1/7      | gpt-3.5-turbo | 64.567    | 98.031        |
+
+
+
+
+## 🔗 Related works
+Open Agent Leaderboard is built on top of the [OmAgent](https://github.com/om-ai-lab/OmAgent) repository.
 
 ## Contributing
 
