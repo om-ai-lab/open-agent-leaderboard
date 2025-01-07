@@ -3,15 +3,15 @@
 This project aims to provide a fair comparison of various agents by evaluating their performance on different datasets and LLMs. Built on top of the [OmAgent](https://github.com/om-ai-lab/OmAgent) framework, it allows for simple, quick, and accurate assessments of agents. 
 
 Supported benchmark datasets:
-- gsm8k
-- AQuA
+- [gsm8k](https://huggingface.co/datasets/openai/gsm8k)
+- [AQuA](https://github.com/google-deepmind/AQuA)
 
 Supported algorithms:
-- COT
-- SC-COT
-- POT
-- ReAct-Pro
-- DNC
+- [COT: Chain-of-thought prompting elicits reasoning in large language models](https://arxiv.org/abs/2201.11903)
+- [SC-COT: Self-Consistency Improves Chain of Thought Reasoning in Language Models](https://arxiv.org/abs/2203.11171)
+- [POT: Program of thoughts prompting: Disentangling computation from reasoning for numerical reasoning tasks](https://arxiv.org/abs/2211.12588)
+- [ReAct: ReAct: Synergizing Reasoning and Acting in Language Models](https://arxiv.org/abs/2210.03629)
+- [DNC: OmAgent: A Multi-modal Agent Framework for Complex Video Understanding with Task Divide-and-Conquer](https://arxiv.org/abs/2406.16620)
 
 Supported LLMs:
 - gpt-3.5-turbo
@@ -230,6 +230,9 @@ Note:
 
 ## 🔗 Related works
 Open Agent Leaderboard is built on top of the [OmAgent](https://github.com/om-ai-lab/OmAgent) repository.
+
+Acknowledgments
+We extend our deepest gratitude to the authors and contributors of the following datasets: gsm8k, AQuA, agent algorithms: COT, SC-COT, POT, ReAct, DNC, and LLMs: gpt-3.5-turbo, Doubao-lite-32k.
 
 ## Contributing
 
