@@ -2,6 +2,22 @@
 
 This project aims to provide a fair comparison of various agents by evaluating their performance on different datasets and LLMs. Built on top of the [OmAgent](https://github.com/om-ai-lab/OmAgent) framework, it allows for simple, quick, and accurate assessments of agents. 
 
+Supported benchmark datasets:
+- gsm8k
+- AQuA
+
+Supported algorithms:
+- COT
+- SC-COT
+- POT
+- ReAct-Pro
+- DNC
+
+Supported LLMs:
+- gpt-3.5-turbo
+- Doubao-lite-32k
+
+
 ## Leaderboards
 
 **Math tasks**
@@ -55,7 +71,7 @@ Set up the environment:
     pip install -e omagent-core
 
 
-Implement your agent in the  [`omagent`](https://github.com/om-ai-lab/OmAgent)  repository,check the `examples/cot` folder.
+Implement your agent in the  [`omagent`](https://github.com/om-ai-lab/OmAgent)  repository, check the `examples/cot` folder.
     
 ### Step 2. Inference in OmAgent Repository
 
