@@ -36,6 +36,7 @@ Supported LLMs:
 | **10**   | ReAct-Pro*     | 2025/1/7      | Doubao-lite-32k | 0.00        | 0.00            | 0.000          | 0.00           | 0.000         |
 | **10**   | DNC           | 2025/1/7      | Doubao-lite-32k | 0.00        | 0.00            | 0.000          | 0.00           | 0.000         |
 
+![Leaderboard Visualization](figs/score_vs_cost.png)
 
 Evaluation details can be found in the [Evaluation Details](#evaluation-details) section.
 
