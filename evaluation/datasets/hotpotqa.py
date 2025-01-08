@@ -21,63 +21,15 @@ def normalize_answer(s):
 
     return white_space_fix(remove_articles(remove_punc(lower(s))))
 
-
-def EM(answer, key) -> bool:
-    return normalize_answer(answer) == normalize_answer(key)
-
-
-def update_sp(metrics, prediction, gold):
-    cur_sp_pred = set(map(tuple, prediction))
-    gold_sp_pred = set(map(tuple, gold))
-    tp, fp, fn = 0, 0, 0
-    for e in cur_sp_pred:
-        if e in gold_sp_pred:
-            tp += 1
-        else:
-            fp += 1
-    for e in gold_sp_pred:
-        if e not in cur_sp_pred:
-            fn += 1
-    prec = 1.0 * tp / (tp + fp) if tp + fp > 0 else 0.0
-    recall = 1.0 * tp / (tp + fn) if tp + fn > 0 else 0.0
-    f1 = 2 * prec * recall / (prec + recall) if prec + recall > 0 else 0.0
-    em = 1.0 if fp + fn == 0 else 0.0
-    metrics["sp_em"] += em
-    metrics["sp_f1"] += f1
-    metrics["sp_prec"] += prec
-    metrics["sp_recall"] += recall
-    return em, prec, recall
-
-
-def exact_match_score(prediction, ground_truth):
-    return normalize_answer(prediction) == normalize_answer(ground_truth)
-
-
-def update_answer(metrics, prediction, gold):
-    em = exact_match_score(prediction, gold)
-    f1, prec, recall = f1_score(prediction, gold)
-    metrics["em"] += float(em)
-    metrics["f1"] += f1
-    metrics["prec"] += prec
-    metrics["recall"] += recall
-    return em, prec, recall
-
-
 def f1_score(prediction, ground_truth):
     normalized_prediction = normalize_answer(prediction)
     normalized_ground_truth = normalize_answer(ground_truth)
 
     ZERO_METRIC = (0, 0, 0)
 
-    if (
-        normalized_prediction in ["yes", "no", "noanswer"]
-        and normalized_prediction != normalized_ground_truth
-    ):
+    if normalized_prediction in ['yes', 'no', 'noanswer'] and normalized_prediction != normalized_ground_truth:
         return ZERO_METRIC
-    if (
-        normalized_ground_truth in ["yes", "no", "noanswer"]
-        and normalized_prediction != normalized_ground_truth
-    ):
+    if normalized_ground_truth in ['yes', 'no', 'noanswer'] and normalized_prediction != normalized_ground_truth:
         return ZERO_METRIC
 
     prediction_tokens = normalized_prediction.split()
@@ -95,7 +47,7 @@ def f1_score(prediction, ground_truth):
 class HotpotQaEvaluator(BaseEvaluator):
     def is_equal(self, pred, refer):
         try:
-            if pred.lower() == refer.lower():
+            if pred == refer or abs(float(pred) - int(refer)) < 1e-6:
                 return True
         except Exception:
             pass
@@ -106,59 +58,41 @@ class HotpotQaEvaluator(BaseEvaluator):
         if len(predictions) != len(references):
             return {"error": "preds and refrs have different length"}
 
-        metrics = {
-            "em": 0,
-            "f1": 0,
-            "prec": 0,
-            "recall": 0,
-            "sp_em": 0,
-            "sp_f1": 0,
-            "sp_prec": 0,
-            "sp_recall": 0,
-            "joint_em": 0,
-            "joint_f1": 0,
-            "joint_prec": 0,
-            "joint_recall": 0,
+        details = []
+        total_em = 0
+        total_f1 = 0
+        
+        for pred, refer in zip(predictions, references):
+            if pred is None or refer is None:
+                details.append({
+                    'pred': pred,
+                    'answer': refer,
+                    'correct': False
+                })
+                continue
+
+            normalized_pred = normalize_answer(pred)
+            normalized_refer = normalize_answer(refer)
+            
+            em = int(normalized_pred == normalized_refer)
+            f1 = f1_score(normalized_pred, normalized_refer)[0]
+            
+            total_em += em
+            total_f1 += f1
+            
+            details.append({
+                'pred': normalized_pred,
+                'answer': normalized_refer,
+                'correct': self.is_equal(pred, refer)
+            })
+        
+        num_samples = len(predictions)
+        return {
+            'reward': 100 *  total_em / num_samples,
+            'em': 100 *  total_em / num_samples,
+            'f1': 100 *  total_f1 / num_samples,
+            'details': details
         }
-        for dp in references:
-            cur_id = dp["_id"]
-            can_eval_joint = True
-            if cur_id not in predictions["answer"]:
-                print("missing answer {}".format(cur_id))
-                can_eval_joint = False
-            else:
-                em, prec, recall = update_answer(
-                    metrics, predictions["answer"][cur_id], dp["answer"]
-                )
-            if cur_id not in predictions["sp"]:
-                print("missing sp fact {}".format(cur_id))
-                can_eval_joint = False
-            else:
-                sp_em, sp_prec, sp_recall = update_sp(
-                    metrics, predictions["sp"][cur_id], dp["supporting_facts"]
-                )
-
-            if can_eval_joint:
-                joint_prec = prec * sp_prec
-                joint_recall = recall * sp_recall
-                if joint_prec + joint_recall > 0:
-                    joint_f1 = (
-                        2 * joint_prec * joint_recall / (joint_prec + joint_recall)
-                    )
-                else:
-                    joint_f1 = 0.0
-                joint_em = em * sp_em
-
-                metrics["joint_em"] += joint_em
-                metrics["joint_f1"] += joint_f1
-                metrics["joint_prec"] += joint_prec
-                metrics["joint_recall"] += joint_recall
-
-        N = len(references)
-        for k in metrics.keys():
-            metrics[k] /= N
-
-        return metrics
 
 
 if __name__ == "__main__":

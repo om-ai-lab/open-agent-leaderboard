@@ -6,13 +6,143 @@ from utils import *
 from evaluation.datasets.gsm8k import Gsm8kEvaluator
 from evaluation.datasets.aqua import AQuAEvaluator
 from evaluation.datasets.hotpotqa import HotpotQaEvaluator
+from evaluation.metrics.pass_rate import PassRateEvaluator
+from evaluation.multi_evaluator import MultiEvaluator
 
 
-def main():
+def parse_and_print_args():
+    """
+    Parse command line arguments and print them.
+    Returns:
+        Namespace: Parsed arguments.
+    """
     args = parse_arguments()
     print("*****************************")
     print(args)
     print("*****************************")
+    return args
+
+def load_predictions(args):
+    """
+    Load model predictions from a JSON file.
+    Args:
+        args (Namespace): Arguments containing the output path.
+    Returns:
+        list: List of model predictions.
+    """
+    with open(args.output_path, "r", encoding="utf-8") as f:
+        return json.load(f)["model_result"]
+
+def handle_model_output(args, question, model_output, decoder):
+    """
+    Handle the model output based on the specified method.
+    Args:
+        args (Namespace): Arguments containing various settings and configurations.
+        question (str): The input question.
+        model_output (str): The raw model output.
+        decoder (object): Decoder object used for handling model output.
+    Returns:
+        str: Cleaned model output.
+    """
+    if args.method == "zero_shot_cot":
+        model_output_postprocess = f"Question: {question}\nModel answer: {model_output} {args.direct_answer_trigger_for_zeroshot_cot}"
+        model_output, _, _ = decoder.decode(args, model_output_postprocess, args.max_length_direct, 0, 2)
+    return answer_cleansing(args, model_output)
+
+def process_predictions(pred_data, args, decoder, gt_data):
+    """
+    Processes prediction data and compares it with ground truth data.
+    Args:
+        pred_data (list): A list of dictionaries containing prediction data.
+        args (Namespace): Arguments containing various settings and configurations.
+        decoder (object): Decoder object used for handling model output.
+        gt_data (dict): Dictionary containing ground truth data.
+    Returns:
+        tuple: A tuple containing:
+            - predictions (list): List of processed predictions.
+            - references (list): List of ground truth references.
+            - input_tokens (list): List of input token counts.
+            - output_tokens (list): List of output token counts.
+            - total (int): Total number of processed entries.
+    Note:
+        If the ground truth answer is not found using the entry_id, it attempts to convert entry_id to an integer and search again.
+        If args.limit_dataset_size is set to a non-zero value, the processing will stop once the limit is reached.
+    """
+    predictions, references, input_tokens, output_tokens, total_tokens = [], [], [], [], []
+    total = 0
+
+    for i, pre in enumerate(pred_data):
+        model_output = pre.get("last_output", "")
+        question = pre.get("question", "")
+        entry_id = pre["id"]
+        input_tokens.append(pre.get("prompt_tokens", 0))
+        output_tokens.append(pre.get("completion_tokens", 0))
+        total_tokens.append(pre.get("total_tokens", 0))
+        
+        if model_output:
+            cleaned_answer = handle_model_output(args, question, model_output, decoder)
+        else:
+            cleaned_answer = answer_cleansing(args, model_output)
+        
+        pred = floatify_ans(cleaned_answer)
+        predictions.append(pred)
+        
+        gt_answer = gt_data.get(entry_id)
+        if gt_answer is None:
+            try:
+                entry_id_int = int(entry_id)
+                gt_answer = gt_data.get(entry_id_int)
+            except ValueError:
+                pass
+        
+        references.append(gt_answer)
+
+        print(f"======== id : {entry_id}, pred : {pred}, gt : {gt_answer}")
+        total += 1
+
+        if (args.limit_dataset_size != 0) and ((i + 1) >= args.limit_dataset_size):
+            break
+
+    return predictions, references, input_tokens, output_tokens, total
+
+def calculate_token_statistics(args, input_tokens, output_tokens):
+    """
+    Calculate and print token statistics and cost.
+    Args:
+        args (Namespace): Arguments containing various settings and configurations.
+        input_tokens (list): List of input token counts.
+        output_tokens (list): List of output token counts.
+    """
+    exchange_rate = 7.3249
+    if args.model == "Doubao-lite-32k":
+        input_token_cost = 0.0003 / exchange_rate # dollars / 1K tokens 
+        output_token_cost = 0.0006 / exchange_rate # dollars / 1K tokens 
+    elif args.model == "gpt-3.5-turbo":
+        input_token_cost = 0.0005  # dollars / 1K tokens 
+        output_token_cost = 0.0015  # dollars / 1K tokens 
+    total_input_tokens = sum(input_tokens)
+    average_input_tokens = total_input_tokens / len(input_tokens) if input_tokens else 0
+    total_output_tokens = sum(output_tokens)
+    average_output_tokens = total_output_tokens / len(output_tokens) if output_tokens else 0
+    total_tokens_sum = total_input_tokens + total_output_tokens
+
+    input_cost = total_input_tokens / 1000 * input_token_cost
+    output_cost = total_output_tokens / 1000 * output_token_cost
+    total_cost = input_cost + output_cost  # dollars
+
+    print("Total input tokens:", total_input_tokens)
+    print("Average input tokens:", average_input_tokens)
+    print("Total output tokens:", total_output_tokens)
+    print("Average output tokens:", average_output_tokens)
+    print("Total tokens:", total_tokens_sum)
+    print("Total cost for tokens:", total_cost)
+
+
+def main():
+    """
+    Main function to run the evaluation process.
+    """
+    args = parse_and_print_args()
 
     fix_seed(args.random_seed)
     print("OPENAI_API_KEY:\n", os.getenv("OPENAI_API_KEY"))
@@ -24,22 +154,16 @@ def main():
     print_now()
 
     # Initialize the evaluator
-    evaluator = {
+    dataset_evaluator = {
         "aqua": AQuAEvaluator(),
         "gsm8k": Gsm8kEvaluator(),
         "hotpotqa": HotpotQaEvaluator(),
     }.get(args.dataset)
 
-    if args.method == "few_shot":
-        demo = create_demo_text(args, cot_flag=False)
-    elif args.method == "few_shot_cot":
-        demo = create_demo_text(args, cot_flag=True)
-    else:
-        demo = ""
-
-    total = 0
-    predictions, references = [], []
-    input_tokens, output_tokens, total_tokens = [], [], []
+    metric_evaluator = PassRateEvaluator()
+    
+    multi_evaluator = MultiEvaluator([dataset_evaluator, metric_evaluator])
+    
     json_results = {
         "dataset": args.dataset,
         "model_id": args.model,
@@ -49,47 +173,14 @@ def main():
     
 
     if args.output_path:
-        # Load predictions from output path
-        with open(args.output_path, "r", encoding="utf-8") as f:
-            pred_data = json.load(f)["model_result"]
-
-        gt_data = load_ground_truth(args.dataset_path)
-
-        for i, pre in enumerate(pred_data):
-            model_output = pre.get("last_output")
-            question = pre.get("question", "")
-            max_length = args.max_length_direct
-
-            if args.method == "zero_shot_cot":
-                model_output_postprocess = (
-                    "Question: " + question + "\nModel answer: " + model_output + " " + args.direct_answer_trigger_for_zeroshot_cot
-                )
-                model_output, _, _ = decoder.decode(args, model_output_postprocess, max_length, i, 2)
-
-            if model_output:
-                cleaned_answer = answer_cleansing(args, model_output)
-                pred = floatify_ans(cleaned_answer)
-                predictions.append(pred)
-
-                entry_id = int(pre["id"])
-                input_tokens.append(pre.get("prompt_tokens", 0))
-                output_tokens.append(pre.get("completion_tokens", 0))
-                total_tokens.append(pre.get("total_tokens", 0))
-
-                if args.dataset == "gsm8k":
-                    gt_answer = gt_data[entry_id]["answer"].split("####")[-1].strip()
-                elif args.dataset == "aqua":
-                    gt_answer = gt_data[entry_id]["correct"]
-
-                references.append(gt_answer)
-
-                print(f"======== id : {entry_id}, pred : {pred}, gt : {gt_answer}")
-                total += 1
-
-                if (args.limit_dataset_size != 0) and ((i + 1) >= args.limit_dataset_size):
-                    break
+        pred_data = load_predictions(args)
+        gt_data = load_ground_truth(args.dataset_path, args.dataset)
+        predictions, references, input_tokens, output_tokens, total = process_predictions(pred_data, args, decoder, gt_data)
 
     else:
+        total = 0
+        demo = create_demo_text(args, cot_flag=(args.method == "few_shot_cot")) if args.method in ["few_shot", "few_shot_cot"] else ""
+        
         for i, data in enumerate(dataloader):
             print(f"*************************\n{i + 1}st data")
             x, y, idx = data
@@ -157,40 +248,29 @@ def main():
                 break
 
     # Evaluate predictions using the evaluator
-    evaluation_result = evaluator.score(predictions, references)
-    print("Evaluation Result:", evaluation_result)
+    evaluation_results = multi_evaluator.evaluate(predictions, references)
+    print("Evaluation Result:", evaluation_results)
+
+    if args.dataset == "hotpotqa":
+        print("Reward : {}".format(evaluation_results.get("reward", 0)))
+        print("F1 : {}".format(evaluation_results.get("f1", 0)))
+        print("EM : {}".format(evaluation_results.get("em", 0)))
+    else:
+        # Calculate accuracy ...
+        print("Accuracy : {}".format(evaluation_results.get("accuracy", 0)))
+    # Calculate pass rate ...
+    print("Pass Rate : {}\n".format(evaluation_results.get("pass_rate", 0)))
     print(f" ======  Testing {args.agent} on {args.dataset} dataset")
 
-    # Calculate accuracy ...
-    accuracy = evaluation_result.get("accuracy", 0)
-    print("Accuracy : {}\n".format(accuracy))
     print("Total predictions:", total)
-
-    # Additional token statistics
-    input_token_cost = 0.0005  # / 1K
-    output_token_cost = 0.0015  # / 1K
-    total_input_tokens = sum(input_tokens)
-    average_input_tokens = total_input_tokens / len(input_tokens) if input_tokens else 0
-    total_output_tokens = sum(output_tokens)
-    average_output_tokens = total_output_tokens / len(output_tokens) if output_tokens else 0
-    total_tokens_sum = (
-        total_input_tokens + total_output_tokens
-        if total_input_tokens > 0 and total_output_tokens > 0
-        else sum(total_tokens)
-    )
-
-    input_cost = total_input_tokens / 1000 * input_token_cost
-    output_cost = total_output_tokens / 1000 * output_token_cost
-    total_cost = input_cost + output_cost  # dollars
-
-    print("Total input tokens:", total_input_tokens)
-    print("Average input tokens:", average_input_tokens)
-    print("Total output tokens:", total_output_tokens)
-    print("Average output tokens:", average_output_tokens)
-    print("Total tokens:", total_tokens_sum)
-    print("Total cost for tokens:", total_cost)
+    calculate_token_statistics(args, input_tokens, output_tokens)
 
 def parse_arguments():
+    """
+    Parse command line arguments.
+    Returns:
+        Namespace: Parsed arguments.
+    """
     parser = argparse.ArgumentParser(description="OmAgent Evaluation")
     parser.add_argument("--random_seed", type=int, default=1, help="random seed")
     parser.add_argument(
@@ -225,6 +305,7 @@ def parse_arguments():
             "gpt-4o-mini",
             "gpt-4o",
             "gpt-3.5-turbo",
+            "Doubao-lite-32k",
         ],
         help="model used for decoding.",
     )
@@ -271,8 +352,8 @@ def parse_arguments():
         help="agent used for experiment",
     )
     parser.add_argument("--system_prompt", type=str, default="", help="system prompt")
-    parser.add_argument("--openai_api_key", type=str, default="", help="openai api key")
-    parser.add_argument("--openai_url", type=str, default="https://api.openai.com/v1", help="openai url")
+    parser.add_argument("--openai_api_key", type=str, default="sk-4zr6uGzVbNfIiq7U513aCc94Af614792938cE9AdB7D0E295", help="openai api key")
+    parser.add_argument("--openai_url", type=str, default="http://36.133.246.107:11002/v1/chat/completions", help="openai url")
 
     args = parser.parse_args()
 

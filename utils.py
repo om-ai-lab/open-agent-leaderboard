@@ -44,7 +44,8 @@ def decoder_for_gpt(args, input, max_length, i, k):
     engine_map = {
         "gpt-4o-mini": "gpt-4o-mini",
         "gpt-4o": "gpt-4o",
-        "gpt-3.5-turbo": "gpt-3.5-turbo"
+        "gpt-3.5-turbo": "gpt-3.5-turbo",
+        "Doubao-lite-32k": "ep-20250102150313-jp4cc", 
     }
     engine = engine_map.get(args.model)
     if engine is None:
@@ -196,6 +197,9 @@ def setup_data_loader(args):
 
 # ver 0.2
 def answer_cleansing(args, pred):
+    if pred is None:
+        print("pred is None or null.")
+        return None
 
     print("pred_before : " + str(pred))
 
@@ -214,7 +218,7 @@ def answer_cleansing(args, pred):
         pred = pred.replace(",", "")
         pred = [s for s in re.findall(r"-?\d+\.?\d*", pred)]
     elif args.dataset == "hotpotqa":
-        pass
+        pred = [pred]
     else:
         raise ValueError("dataset is not properly defined ")
 
@@ -263,16 +267,22 @@ def floatify_ans(ans):
                 ans = int(float(ans[0]))
             except (ValueError, TypeError):
                 ans = int(str(ans[0]))
-    else:
-        try:
-            if isinstance(ans, str):
-                # If it's an option (e.g., 'A', 'B', 'C', 'D', 'E'), return it directly
-                if ans in ["A", "B", "C", "D", "E"]:
-                    return ans
-            return int(float(ans))
-        except (ValueError, TypeError):
-            ans = int(str(ans))
-    return ans
+    elif isinstance(ans, str):
+        return ans
+    
+    try:
+        if isinstance(ans, str):
+            # If it is an option (for example 'A', 'B', 'C', 'D', 'E'), return it directly
+            if ans in ["A", "B", "C", "D", "E"]:
+                return ans
+            # Check if it's a number (including negative numbers and decimals)
+            if ans.replace('.', '', 1).isdigit() or (ans.startswith('-') and ans[1:].replace('.', '', 1).isdigit()):
+                return int(float(ans))
+            else:
+                return None 
+        return int(float(ans))
+    except (ValueError, TypeError):
+        return None
 
 
 def create_demo_text(args, cot_flag):
@@ -436,11 +446,22 @@ def configure_cot_trigger(args):
     return args
 
 
-def load_ground_truth(dataset_path: str) -> dict:
+def load_ground_truth(dataset_path: str, dataset_type: str) -> dict:
     """Load ground truth data from the dataset path."""
     gt_data = {}
     with open(dataset_path, "r", encoding="utf-8") as f:
-        for line in f:
-            entry = json.loads(line)
-            gt_data[entry["id"]] = entry
+        if dataset_type == "aqua":
+            for line in f:
+                entry = json.loads(line)
+                gt_data[entry["id"]] = entry["correct"]  # Assuming 'correct' is the key for the answer
+        elif dataset_type == "gsm8k":
+            for line in f:
+                entry = json.loads(line)
+                gt_data[entry["id"]] = entry["answer"].split("#### ")[-1].strip()
+        elif dataset_type == "hotpotqa":
+            json_data = json.load(f)
+            for entry in json_data:
+                gt_data[entry["_id"]] = entry["answer"].strip()
+        else:
+            raise ValueError("dataset type is not properly defined ...")
     return gt_data
