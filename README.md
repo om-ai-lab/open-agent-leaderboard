@@ -39,7 +39,7 @@ Supported LLMs:
 
 Evaluation details can be found in the [Evaluation Details](#evaluation-details) section.
 
-ReAct-Pro*: We improved ReAct to ReAct-Pro, following the [Reflexion](https://github.com/noahshinn/reflexion) repository. Comparasion with the original ReAct repo can be found in the [Compare to ReAct](#comparison-react-with-react-pro) section.
+ReAct-Pro*: We modified ReAct to ReAct-Pro, following the [Reflexion](https://github.com/noahshinn/reflexion) repository. Comparasion with the original ReAct repo can be found in the [Compare to ReAct](#comparison-react-with-react-pro) section.
 
 ![Leaderboard Visualization](figs/score_vs_cost.png)
 
