@@ -1,5 +1,14 @@
-# Open Agent Leaderboard
 
+<div>
+    <h1 align="center">🏅 Open Agent Leaderboard </h1>
+</div>
+
+<p align="center">
+  <a href="https://huggingface.co/spaces/omlab/open-agent-leaderboard">🤗 HF Leaderboard
+  </a>
+</p>
+
+## 📖 Introduction
 This project aims to provide a fair comparison of various agents by evaluating their performance on different datasets and LLMs. Built on top of the [OmAgent](https://github.com/om-ai-lab/OmAgent) framework, it allows for simple, quick, and accurate assessments of agents.
 
 Supported benchmark datasets:
@@ -13,14 +22,14 @@ Supported algorithms:
 - [SC-COT: Self-Consistency Improves Chain of Thought Reasoning in Language Models](https://arxiv.org/abs/2203.11171)
 - [POT: Program of thoughts prompting: Disentangling computation from reasoning for numerical reasoning tasks](https://arxiv.org/abs/2211.12588)
 - [ReAct: ReAct: Synergizing Reasoning and Acting in Language Models](https://arxiv.org/abs/2210.03629)
-- [DNC: OmAgent: A Multi-modal Agent Framework for Complex Video Understanding with Task Divide-and-Conquer](https://arxiv.org/abs/2406.16620)
+<!-- - [DNC: OmAgent: A Multi-modal Agent Framework for Complex Video Understanding with Task Divide-and-Conquer](https://arxiv.org/abs/2406.16620) -->
 
 Supported LLMs:
 
 - gpt-3.5-turbo
 - Doubao-lite-32k
 
-## Leaderboards
+## 🏅 Leaderboards
 
 **Math tasks**
 
@@ -38,13 +47,13 @@ Supported LLMs:
 |  **10**  |      IO       |   2025/1/7    |  gpt-3.5-turbo  |    38.40    |      37.83      |      0.3328       |     38.98      |      0.0380      |
 
 
-Evaluation details can be found in the [Evaluation Details](#evaluation-details) section.
+Evaluation details can be found in the [Evaluation Details](#evaluation-details) section and [huggingface leaderboard](https://huggingface.co/spaces/omlab/open-agent-leaderboard).
 
 ReAct-Pro*: We modified ReAct to ReAct-Pro, following the [Reflexion](https://github.com/noahshinn/reflexion) repository. Comparasion with the original ReAct repo can be found in the [Compare to ReAct](#comparison-react-with-react-pro) section.
 
 ![Leaderboard Visualization](figs/score_vs_cost.png)
 
-## How to Install
+## 🛠️ How to Install
 
 1. Clone the repository:
 
@@ -58,7 +67,7 @@ ReAct-Pro*: We modified ReAct to ReAct-Pro, following the [Reflexion](https://gi
    pip install -r requirements.txt
    ```
 
-## How to Evaluate Agents
+## 🏗️ How to Evaluate Agents
 
 ### Step 1. Implement your agent in the  [`omagent`](https://github.com/om-ai-lab/OmAgent)  repository
 
@@ -135,7 +144,7 @@ python main.py --dataset <dataset_name> --model <model_name> --method <method_na
 - `--limit_dataset_size`: Whether to limit the test dataset size, default is 0 (no limit).
 - `--output_dir`: Output directory, default is `./outputs/`.
 - `--output_path`: Output path, default is empty.
-- `--agent`: Agent used for the experiment, options are `cot`, `pot`, `sc_cot`, `react`, `dnc`.
+- `--agent`: Agent used for the experiment, options are `cot`, `pot`, `sc_cot`, `react`.
 - `--system_prompt`: System prompt, default is empty.
 - `--openai_api_key`: OpenAI API key, default is empty.
 - `--openai_url`: OpenAI API URL, default is `https://api.openai.com/v1`.
@@ -186,7 +195,7 @@ LLM prices:
   - 0.00004096$/1M tokens  (input)
   - 0.0001$/1M tokens  (output)
 
-Pass Rate*: The pass rate is calculated by evaluating the percentage of predictions that are valid, where a prediction is deemed valid if it is neither empty nor null, relative to the total number of predictions.
+Pass Rate*: The pass rate is calculated by evaluating the percentage of predictions that are valid, where a prediction is valid if it is neither empty nor null.
 
 ### Compare to original agent repositories
 
@@ -223,12 +232,29 @@ Note:
 Open Agent Leaderboard is built on top of the [OmAgent](https://github.com/om-ai-lab/OmAgent) repository.
 
 Acknowledgments
-We extend our deepest gratitude to the authors and contributors of the following datasets: gsm8k, AQuA, agent algorithms: COT, SC-COT, POT, ReAct, DNC, and LLMs: gpt-3.5-turbo, Doubao-lite-32k.
 
-## Contributing
+We extend our deepest gratitude to the authors and contributors of the following datasets: gsm8k, AQuA, agent algorithms: COT, SC-COT, POT, ReAct, and LLMs: gpt-3.5-turbo, Doubao-lite-32k.
+
+## ⭐️ Citation
+
+If you find our repository beneficial, please cite our paper:  
+```angular2
+@article{zhang2024omagent,
+  title={OmAgent: A Multi-modal Agent Framework for Complex Video Understanding with Task Divide-and-Conquer},
+  author={Zhang, Lu and Zhao, Tiancheng and Ying, Heting and Ma, Yibo and Lee, Kyusong},
+  journal={arXiv preprint arXiv:2406.16620},
+  year={2024}
+}
+
+```
+
+## 🔔 Follow us
+You can follow us on [X](https://x.com/OmAI_lab) and [Discord](https://discord.gg/G9n5tq4qfK) for more updates and discussions.  
+
+## 🤝 Contributing
 
 Feel free to submit issues and pull requests.
 
-## License
+## 📝 License
 
 This project is licensed under the MIT License.
