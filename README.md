@@ -1,4 +1,3 @@
-
 <div>
     <h1 align="center">🏅 Open Agent Leaderboard </h1>
 </div>
@@ -18,11 +17,11 @@ Supported benchmark datasets:
 
 Supported algorithms:
 
-- [COT: Chain-of-thought prompting elicits reasoning in large language models](https://arxiv.org/abs/2201.11903)
-- [SC-COT: Self-Consistency Improves Chain of Thought Reasoning in Language Models](https://arxiv.org/abs/2203.11171)
-- [POT: Program of thoughts prompting: Disentangling computation from reasoning for numerical reasoning tasks](https://arxiv.org/abs/2211.12588)
+- [IO: Input-Output Direct Prompting (Baseline)]
+- [CoT: Chain-of-thought prompting elicits reasoning in large language models](https://arxiv.org/abs/2201.11903)
+- [SC-CoT: Self-Consistency Improves Chain of Thought Reasoning in Language Models](https://arxiv.org/abs/2203.11171)
+- [PoT: Program of thoughts prompting: Disentangling computation from reasoning for numerical reasoning tasks](https://arxiv.org/abs/2211.12588)
 - [ReAct: ReAct: Synergizing Reasoning and Acting in Language Models](https://arxiv.org/abs/2210.03629)
-<!-- - [DNC: OmAgent: A Multi-modal Agent Framework for Complex Video Understanding with Task Divide-and-Conquer](https://arxiv.org/abs/2406.16620) -->
 
 Supported LLMs:
 
@@ -35,21 +34,23 @@ Supported LLMs:
 
 | **Rank** | **Algorithm** | **Eval Time** |     **LLM**     | **Average** | **gsm8k-score** | **gsm8k-cost($)** | **AQuA-score** | **AQuA-cost($)** |
 | :------: | :-----------: | :-----------: | :-------------: | :---------: | :-------------: | :---------------: | :------------: | :--------------: |
-|  **1**   |    SC-COT     |   2025/1/7    | Doubao-lite-32k |    86.05    |      88.63      |      0.1533       |     83.46      |      0.0409      |
-|  **2**   |      COT      |   2025/1/7    | Doubao-lite-32k |    85.99    |      89.31      |      0.0557       |     82.68      |      0.0066      |
+|  **1**   |    SC-CoT     |   2025/1/7    | Doubao-lite-32k |    86.04    |      88.63      |      0.1533       |     83.46      |      0.0409      |
+|  **2**   |      CoT      |   2025/1/7    | Doubao-lite-32k |    86.00    |      89.31      |      0.0557       |     82.68      |      0.0066      |
 |  **3**   |  ReAct-Pro*   |   2025/1/7    | Doubao-lite-32k |    81.58    |      85.60      |      0.2513       |     77.56      |      0.0446      |
-|  **4**   |      IO       |   2025/1/7    | Doubao-lite-32k |    75.58    |      72.02      |      0.0354       |     79.13      |      0.0058      |
-|  **5**   |    SC-COT     |   2025/1/7    |  gpt-3.5-turbo  |    73.69    |      80.06      |      5.0227       |     67.32      |      0.6491      |
-|  **6**   |      COT      |   2025/1/7    |  gpt-3.5-turbo  |    69.86    |      78.70      |      0.6788       |     61.02      |      0.0957      |
+|  **4**   |      IO       |   2025/1/7    | Doubao-lite-32k |    75.57    |      72.02      |      0.0354       |     79.13      |      0.0058      |
+|  **5**   |    SC-CoT     |   2025/1/7    |  gpt-3.5-turbo  |    73.69    |      80.06      |      5.0227       |     67.32      |      0.6491      |
+|  **6**   |      CoT      |   2025/1/7    |  gpt-3.5-turbo  |    69.86    |      78.70      |      0.6788       |     61.02      |      0.0957      |
 |  **7**   |  ReAct-Pro*   |   2025/1/7    |  gpt-3.5-turbo  |    69.74    |      74.91      |      3.4633       |     64.57      |      0.4928      |
-|  **8**   |      POT      |   2025/1/7    | Doubao-lite-32k |    65.76    |      79.15      |      0.0575       |     52.36      |      0.0142      |
-|  **9**   |      POT      |   2025/1/7    |  gpt-3.5-turbo  |    64.42    |      76.88      |      0.6902       |     51.97      |      0.1557      |
+|  **8**   |      PoT      |   2025/1/7    | Doubao-lite-32k |    65.76    |      79.15      |      0.0575       |     52.36      |      0.0142      |
+|  **9**   |      PoT      |   2025/1/7    |  gpt-3.5-turbo  |    64.42    |      76.88      |      0.6902       |     51.97      |      0.1557      |
 |  **10**  |      IO       |   2025/1/7    |  gpt-3.5-turbo  |    38.40    |      37.83      |      0.3328       |     38.98      |      0.0380      |
 
 
 Evaluation details can be found in the [Evaluation Details](#evaluation-details) section and [huggingface leaderboard](https://huggingface.co/spaces/omlab/open-agent-leaderboard).
 
-ReAct-Pro*: We modified ReAct to ReAct-Pro, following the [Reflexion](https://github.com/noahshinn/reflexion) repository. Comparasion with the original ReAct repo can be found in the [Compare to ReAct](#comparison-react-with-react-pro) section.
+- IO (Input-Output) is the baseline method that directly prompts the model with the question and expects an answer without any intermediate reasoning steps. It represents the most basic way of using language models and serves as a reference point for evaluating the effectiveness of other algorithms.
+
+- ReAct-Pro*: We modified ReAct to ReAct-Pro, following the [Reflexion](https://github.com/noahshinn/reflexion) repository. Comparasion with the original ReAct repo can be found in the [Compare to ReAct](#comparison-react-with-react-pro) section.
 
 ![Leaderboard Visualization](figs/score_vs_cost.png)
 
@@ -161,22 +162,22 @@ python main.py --output_path example/gsm8k_results_cot.json --dataset gsm8k --me
 | :-----------: | :---------: | :-----------: | :-------------: | :-------: | :------------: | :--------: | :-----------------------: | :---------: | :--------------------: | :----------------------: | :---------------------: | :-----------------------: | :------------: | :----------: |
 |    **IO**     |    gsm8k    |   2025/1/7    |  gpt-3.5-turbo  |   37.83   |     99.92      |     8      |                           |    1319     |        546,990         |           415            |         39,563          |            30             |    586,553     |    0.3328    |
 |    **IO**     |    gsm8k    |   2025/1/7    | Doubao-lite-32k |   72.02   |     99.92      |     8      |                           |    1319     |        617,377         |           468            |         123,106         |            93             |    740,483     |    0.0354    |
-|    **COT**    |    gsm8k    |   2025/1/7    |  gpt-3.5-turbo  |   78.70   |     100.00     |     8      |                           |    1319     |        953,242         |           723            |         134,799         |            102            |   1,088,041    |    0.6788    |
-|    **COT**    |    gsm8k    |   2025/1/7    | Doubao-lite-32k |   89.31   |     100.00     |     8      |                           |    1319     |       1,042,095        |           790            |         159,725         |            121            |   1,201,820    |    0.0557    |
-|  **SC-COT**   |    gsm8k    |   2025/1/7    |  gpt-3.5-turbo  |   80.06   |     99.62      |     8      | temperature=1, path_num=5 |    1319     |       5,260,319        |          3,988           |        1,595,016        |           1,209           |   6,855,335    |    5.0227    |
-|  **SC-COT**   |    gsm8k    |   2025/1/7    | Doubao-lite-32k |   88.63   |     99.77      |     8      | temperature=1, path_num=5 |    1319     |       1,150,443        |           872            |        1,295,750        |            982            |   2,446,193    |    0.1533    |
-|    **POT**    |    gsm8k    |   2025/1/7    |  gpt-3.5-turbo  |   76.88   |     99.24      |     8      |                           |    1319     |       1,090,418        |           827            |         96,662          |            73             |   1,187,080    |    0.6902    |
-|    **POT**    |    gsm8k    |   2025/1/7    | Doubao-lite-32k |   79.15   |     92.65      |     8      |                           |    1319     |       1,170,038        |           887            |         116,987         |            89             |   1,287,025    |    0.0575    |
+|    **CoT**    |    gsm8k    |   2025/1/7    |  gpt-3.5-turbo  |   78.70   |     100.00     |     8      |                           |    1319     |        953,242         |           723            |         134,799         |            102            |   1,088,041    |    0.6788    |
+|    **CoT**    |    gsm8k    |   2025/1/7    | Doubao-lite-32k |   89.31   |     100.00     |     8      |                           |    1319     |       1,042,095        |           790            |         159,725         |            121            |   1,201,820    |    0.0557    |
+|  **SC-CoT**   |    gsm8k    |   2025/1/7    |  gpt-3.5-turbo  |   80.06   |     99.62      |     8      | temperature=1, path_num=5 |    1319     |       5,260,319        |          3,988           |        1,595,016        |           1,209           |   6,855,335    |    5.0227    |
+|  **SC-CoT**   |    gsm8k    |   2025/1/7    | Doubao-lite-32k |   88.63   |     99.77      |     8      | temperature=1, path_num=5 |    1319     |       1,150,443        |           872            |        1,295,750        |            982            |   2,446,193    |    0.1533    |
+|    **PoT**    |    gsm8k    |   2025/1/7    |  gpt-3.5-turbo  |   76.88   |     99.24      |     8      |                           |    1319     |       1,090,418        |           827            |         96,662          |            73             |   1,187,080    |    0.6902    |
+|    **PoT**    |    gsm8k    |   2025/1/7    | Doubao-lite-32k |   79.15   |     92.65      |     8      |                           |    1319     |       1,170,038        |           887            |         116,987         |            89             |   1,287,025    |    0.0575    |
 | **ReAct-Pro** |    gsm8k    |   2025/1/7    |  gpt-3.5-turbo  |   74.91   |     99.39      |     8      |       max_steps=10        |    1319     |       6,506,164        |          4,933           |         140,122         |            106            |   6,646,286    |    3.4633    |
 | **ReAct-Pro** |    gsm8k    |   2025/1/7    | Doubao-lite-32k |   85.60   |     99.62      |     8      |       max_steps=10        |    1319     |       5,862,016        |          4,444           |         136,623         |            104            |   5,998,639    |    0.2513    |
 |    **IO**     |    AQuA     |   2025/1/7    |  gpt-3.5-turbo  |   38.98   |     100.00     |     0      |                           |     254     |         25,701         |           101            |         16,770          |            66             |     42,471     |    0.0380    |
 |    **IO**     |    AQuA     |   2025/1/7    | Doubao-lite-32k |   79.13   |     100.00     |     0      |                           |     254     |         33,058         |           130            |         54,684          |            215            |     87,742     |    0.0058    |
-|    **COT**    |    AQuA     |   2025/1/7    |  gpt-3.5-turbo  |   61.02   |     93.70      |     0      |                           |     254     |         25,447         |           100            |         55,346          |            218            |     80,793     |    0.0957    |
-|    **COT**    |    AQuA     |   2025/1/7    | Doubao-lite-32k |   82.68   |     97.24      |     0      |                           |     254     |         27,978         |           110            |         66,599          |            262            |     94,577     |    0.0066    |
-|  **SC-COT**   |    AQuA     |   2025/1/7    |  gpt-3.5-turbo  |   67.32   |     100.00     |     0      | temperature=1, path_num=5 |     254     |        219,241         |           863            |         359,629         |           1,416           |    578,870     |    0.6491    |
-|  **SC-COT**   |    AQuA     |   2025/1/7    | Doubao-lite-32k |   83.46   |     97.24      |     0      | temperature=1, path_num=5 |     254     |        259,804         |          1,023           |         369,741         |           1,456           |    629,545     |    0.0409    |
-|    **POT**    |    AQuA     |   2025/1/7    |  gpt-3.5-turbo  |   51.97   |     92.91      |     0      |                           |     254     |        223,438         |           880            |         29,323          |            115            |    252,761     |    0.1557    |
-|    **POT**    |    AQuA     |   2025/1/7    | Doubao-lite-32k |   52.36   |     82.28      |     0      |                           |     254     |        256,721         |          1,011           |         44,729          |            176            |    301,450     |    0.0142    |
+|    **CoT**    |    AQuA     |   2025/1/7    |  gpt-3.5-turbo  |   61.02   |     93.70      |     0      |                           |     254     |         25,447         |           100            |         55,346          |            218            |     80,793     |    0.0957    |
+|    **CoT**    |    AQuA     |   2025/1/7    | Doubao-lite-32k |   82.68   |     97.24      |     0      |                           |     254     |         27,978         |           110            |         66,599          |            262            |     94,577     |    0.0066    |
+|  **SC-CoT**   |    AQuA     |   2025/1/7    |  gpt-3.5-turbo  |   67.32   |     100.00     |     0      | temperature=1, path_num=5 |     254     |        219,241         |           863            |         359,629         |           1,416           |    578,870     |    0.6491    |
+|  **SC-CoT**   |    AQuA     |   2025/1/7    | Doubao-lite-32k |   83.46   |     97.24      |     0      | temperature=1, path_num=5 |     254     |        259,804         |          1,023           |         369,741         |           1,456           |    629,545     |    0.0409    |
+|    **PoT**    |    AQuA     |   2025/1/7    |  gpt-3.5-turbo  |   51.97   |     92.91      |     0      |                           |     254     |        223,438         |           880            |         29,323          |            115            |    252,761     |    0.1557    |
+|    **PoT**    |    AQuA     |   2025/1/7    | Doubao-lite-32k |   52.36   |     82.28      |     0      |                           |     254     |        256,721         |          1,011           |         44,729          |            176            |    301,450     |    0.0142    |
 | **ReAct-Pro** |    AQuA     |   2025/1/7    |  gpt-3.5-turbo  |   64.57   |     98.03      |     0      |       max_steps=10        |     254     |        862,614         |          3,396           |         40,973          |            161            |    903,587     |    0.4928    |
 | **ReAct-Pro** |    AQuA     |   2025/1/7    | Doubao-lite-32k |   77.56   |     96.06      |     0      |       max_steps=10        |     254     |        977,890         |          3,850           |         54,951          |            216            |   1,032,841    |    0.0446    |
 
@@ -201,31 +202,31 @@ Pass Rate*: The pass rate is calculated by evaluating the percentage of predicti
 
 | **Algorithm** | **Dataset** | **Eval Time** |    **LLM**    | **Framework** | **Score** |
 | :-----------: | :---------: | :-----------: | :-----------: | :-----------: | :-------: |
-|    **COT**    |    gsm8k    |   2025/1/7    | gpt-3.5-turbo | Original repo |  79.226   |
-|    **COT**    |    gsm8k    |   2025/1/7    | gpt-3.5-turbo |    OmAgent    |  78.696   |
-|    **COT**    |    AQuA     |   2025/1/7    | gpt-3.5-turbo | Original repo |  60.630   |
-|    **COT**    |    AQuA     |   2025/1/7    | gpt-3.5-turbo |    OmAgent    |  61.024   |
-|    **POT**    |    gsm8k    |   2025/1/7    |  gpt-4o-mini  | Original repo |  86.353   |
-|    **POT**    |    gsm8k    |   2025/1/7    |  gpt-4o-mini  |    OmAgent    |  88.248   |
-|   **ReAct**   |    AQuA     |   2025/1/7    | gpt-3.5-turbo | Original repo |  35.039   |
-|   **ReAct**   |    AQuA     |   2025/1/7    | gpt-3.5-turbo |    OmAgent    |  34.252   |
-|   **ReAct**   |  HotpotQA   |   2025/1/8    | gpt-3.5-turbo | Original repo |  28.000   |
-|   **ReAct**   |  HotpotQA   |   2025/1/8    | gpt-3.5-turbo |    OmAgent    |  27.400   |
+|    **CoT**    |    gsm8k    |   2025/1/7    | gpt-3.5-turbo | Original repo |  79.23   |
+|    **CoT**    |    gsm8k    |   2025/1/7    | gpt-3.5-turbo |    OmAgent    |  78.70   |
+|    **CoT**    |    AQuA     |   2025/1/7    | gpt-3.5-turbo | Original repo |  60.63   |
+|    **CoT**    |    AQuA     |   2025/1/7    | gpt-3.5-turbo |    OmAgent    |  61.02   |
+|    **PoT**    |    gsm8k    |   2025/1/7    |  gpt-4o-mini  | Original repo |  86.35   |
+|    **PoT**    |    gsm8k    |   2025/1/7    |  gpt-4o-mini  |    OmAgent    |  88.25   |
+|   **ReAct**   |    AQuA     |   2025/1/7    | gpt-3.5-turbo | Original repo |  35.04   |
+|   **ReAct**   |    AQuA     |   2025/1/7    | gpt-3.5-turbo |    OmAgent    |  34.25   |
+|   **ReAct**   |  HotpotQA   |   2025/1/8    | gpt-3.5-turbo | Original repo |  28.00   |
+|   **ReAct**   |  HotpotQA   |   2025/1/8    | gpt-3.5-turbo |    OmAgent    |  27.40   |
 
 Note:
 
 - The original repo is the official repository of the agent implementation.
 - OmAgent is the implementation of the agent in this project.
-- There is no official implementation of SC-COT.
+- There is no official implementation of SC-CoT.
 
 ### Comparison ReAct with ReAct-Pro
 
 | **Algorithm** | **Dataset** | **Eval Time** |    **LLM**    | **Score** | **Pass Rate** |
 | :-----------: | :---------: | :-----------: | :-----------: | :-------: | :-----------: |
-|   **ReAct**   |    gsm8k    |   2025/1/7    | gpt-3.5-turbo |  38.135   |    100.000    |
-| **ReAct-Pro** |    gsm8k    |   2025/1/7    | gpt-3.5-turbo |  74.905   |    99.393     |
-|   **ReAct**   |    AQuA     |   2025/1/7    | gpt-3.5-turbo |  34.252   |    97.638     |
-| **ReAct-Pro** |    AQuA     |   2025/1/7    | gpt-3.5-turbo |  64.567   |    98.031     |
+|   **ReAct**   |    gsm8k    |   2025/1/7    | gpt-3.5-turbo |  38.14   |    100.00    |
+| **ReAct-Pro** |    gsm8k    |   2025/1/7    | gpt-3.5-turbo |  74.91   |    99.39     |
+|   **ReAct**   |    AQuA     |   2025/1/7    | gpt-3.5-turbo |  34.25   |    97.64     |
+| **ReAct-Pro** |    AQuA     |   2025/1/7    | gpt-3.5-turbo |  64.57   |    98.03     |
 
 ## 🔗 Related works
 
@@ -233,19 +234,19 @@ Open Agent Leaderboard is built on top of the [OmAgent](https://github.com/om-ai
 
 Acknowledgments
 
-We extend our deepest gratitude to the authors and contributors of the following datasets: gsm8k, AQuA, agent algorithms: COT, SC-COT, POT, ReAct, and LLMs: gpt-3.5-turbo, Doubao-lite-32k.
+We extend our deepest gratitude to the authors and contributors of the following datasets: gsm8k, AQuA, agent algorithms: CoT, SC-CoT, PoT, ReAct, and LLMs: gpt-3.5-turbo, Doubao-lite-32k.
 
 ## ⭐️ Citation
 
-If you find our repository beneficial, please cite our paper:  
-```angular2
-@article{zhang2024omagent,
-  title={OmAgent: A Multi-modal Agent Framework for Complex Video Understanding with Task Divide-and-Conquer},
-  author={Zhang, Lu and Zhao, Tiancheng and Ying, Heting and Ma, Yibo and Lee, Kyusong},
-  journal={arXiv preprint arXiv:2406.16620},
-  year={2024}
+If you find our repository beneficial, please cite our repository:
+```bibtex
+@misc{open-agent-leaderboard,
+    title={Open Agent Leaderboard},
+    author={Om AI Lab},
+    year={2025},
+    publisher={GitHub},
+    howpublished={\url{https://github.com/om-ai-lab/open-agent-leaderboard}}
 }
-
 ```
 
 ## 🔔 Follow us
