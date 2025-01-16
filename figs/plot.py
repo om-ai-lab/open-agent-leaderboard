@@ -4,18 +4,18 @@ import matplotlib.pyplot as plt
 aqua_algorithms = ['IO', 'COT', 'SC-COT', 'POT', 'ReAct-Pro*', 
                   'IO', 'COT', 'SC-COT', 'POT', 'ReAct-Pro*']
 aqua_llms = ['gpt-3.5-turbo'] * 5 + ['Doubao-lite-32k'] * 5
-aqua_costs = [0.0380, 0.0957, 0.6491, 0.1557, 0.4928, 
-              0.0058, 0.0066, 0.0409, 0.0142, 0.0446]
-aqua_scores = [38.98, 61.02, 67.32, 51.97, 64.57, 
-               79.13, 82.68, 83.46, 52.36, 77.56]
+aqua_costs = [0.0380, 0.0957, 0.6491, 0.1748, 0.4928, 
+              0.0058, 0.0066, 0.0409, 0.0147, 0.0446]
+aqua_scores = [38.98, 61.02, 67.32, 59.45, 64.57, 
+               79.13, 82.68, 83.46, 71.65, 77.56]
 
 # Data - GSM8K
 gsm8k_algorithms = aqua_algorithms  # Same algorithm order
 gsm8k_llms = aqua_llms  # Same LLM order
 gsm8k_costs = [0.3328, 0.6788, 5.0227, 0.6902, 3.4633, 
-               0.0354, 0.0557, 0.1533, 0.0575, 0.2513]
+               0.0354, 0.0557, 0.1533, 0.0576, 0.2513]
 gsm8k_scores = [37.83, 78.70, 80.06, 76.88, 74.91, 
-                72.02, 89.31, 88.63, 79.15, 85.60]
+                72.02, 89.31, 88.63, 79.61, 85.60]
 
 # Create figure
 plt.figure(figsize=(15, 10))  # Increase figure size
@@ -86,7 +86,7 @@ plt.yticks(fontsize=12)
 plt.gca().xaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f'{x:.2f}'))  # Format x-axis values as 0.00x
 
 # Save figure
-plt.savefig('score_vs_cost.png', dpi=300, bbox_inches='tight')
+plt.savefig('score_vs_cost11.png', dpi=300, bbox_inches='tight')
 
 # Show figure
 plt.show()
