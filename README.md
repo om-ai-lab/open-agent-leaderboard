@@ -18,7 +18,7 @@ Supported benchmark datasets:
 Supported algorithms:
 
 - IO: Input-Output Direct Prompting (Baseline)
-- [CoT: Chain-of-thought prompting elicits reasoning in large language models](https://arxiv.org/abs/2201.11903)
+- [CoT: Chain-of-thought prompting elicits reasoning in large language models](https://arxiv.org/abs/2201.11903), [Large Language Models are Zero-Shot Reasoners](https://arxiv.org/pdf/2205.11916)
 - [SC-CoT: Self-Consistency Improves Chain of Thought Reasoning in Language Models](https://arxiv.org/abs/2203.11171)
 - [PoT: Program of thoughts prompting: Disentangling computation from reasoning for numerical reasoning tasks](https://arxiv.org/abs/2211.12588)
 - [ReAct: ReAct: Synergizing Reasoning and Acting in Language Models](https://arxiv.org/abs/2210.03629)
