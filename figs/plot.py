@@ -1,92 +1,63 @@
 import matplotlib.pyplot as plt
+import pandas as pd
 
-# Data - AQuA
-aqua_algorithms = ['IO', 'COT', 'SC-COT', 'POT', 'ReAct-Pro*', 
-                  'IO', 'COT', 'SC-COT', 'POT', 'ReAct-Pro*']
-aqua_llms = ['gpt-3.5-turbo'] * 5 + ['Doubao-lite-32k'] * 5
-aqua_costs = [0.0380, 0.0957, 0.6491, 0.1748, 0.4928, 
-              0.0058, 0.0066, 0.0409, 0.0147, 0.0446]
-aqua_scores = [38.98, 61.02, 67.32, 59.45, 64.57, 
-               79.13, 82.68, 83.46, 71.65, 77.56]
+# 从 CSV 文件中读取数据
+df = pd.read_csv('figs/overall_results.csv')
 
-# Data - GSM8K
-gsm8k_algorithms = aqua_algorithms  # Same algorithm order
-gsm8k_llms = aqua_llms  # Same LLM order
-gsm8k_costs = [0.3328, 0.6788, 5.0227, 0.6902, 3.4633, 
-               0.0354, 0.0557, 0.1533, 0.0576, 0.2513]
-gsm8k_scores = [37.83, 78.70, 80.06, 76.88, 74.91, 
-                72.02, 89.31, 88.63, 79.61, 85.60]
+# 过滤掉成本为0的数据
+df = df[(df['AQuA-Cost($)'] > 0) & (df['gsm8k-Cost($)'] > 0)]
 
-# Create figure
-plt.figure(figsize=(15, 10))  # Increase figure size
+# 计算每个 Algorithm 和 LLM 的平均分数和平均成本
+df['Avg_Score'] = (df['AQuA-Score'] + df['gsm8k-Score']) / 2
+df['Avg_Cost'] = (df['AQuA-Cost($)'] + df['gsm8k-Cost($)']) / 2
 
-# Calculate valid maximum values
-valid_costs = [c for c in aqua_costs + gsm8k_costs if c is not None and c > 0]
-valid_scores = [s for s in aqua_scores + gsm8k_scores if s > 0]
-max_cost = max(valid_costs)
-max_score = max(valid_scores)
+# 按 Algorithm 和 LLM 分组并计算平均值
+avg_data = df.groupby(['Algorithm', 'LLM']).agg({'Avg_Score': 'mean', 'Avg_Cost': 'mean'}).reset_index()
 
-# Plot lines for each LLM and dataset
-llms = ['gpt-3.5-turbo', 'Doubao-lite-32k']
-datasets = ['AQuA', 'GSM8K']
-colors = ['blue', 'red']
-markers = ['o', 's']
+# 创建图形
+plt.figure(figsize=(15, 10))
 
-for llm_idx, llm in enumerate(llms):
-    for dataset_idx, dataset in enumerate(datasets):
-        points = []
-        for i, (algo, curr_llm) in enumerate(zip(aqua_algorithms, aqua_llms)):
-            if curr_llm == llm:
-                if dataset == 'AQuA' and aqua_scores[i] > 0 and aqua_costs[i] > 0:
-                    points.append((aqua_costs[i], aqua_scores[i], algo))
-                elif dataset == 'GSM8K' and gsm8k_scores[i] > 0 and gsm8k_costs[i] is not None and gsm8k_costs[i] > 0:
-                    points.append((gsm8k_costs[i], gsm8k_scores[i], algo))
-        
-        if points:
-            # Sort by cost
-            points.sort(key=lambda x: x[0])
-            costs, scores, algos = zip(*points)
-            
-            # Plot lines and points
-            color = colors[dataset_idx]
-            linestyle = '-' if llm == 'gpt-3.5-turbo' else '--'
-            label = f'{dataset}-{llm}'
-            
-            plt.plot(costs, scores, linestyle, color=color, alpha=0.5, label=label, linewidth=2)
-            plt.scatter(costs, scores, color=color, marker=markers[llm_idx], s=100)  # Increase point size
-            
-            # Add labels
-            for cost, score, algo in points:
-                label = f'{algo}\n({llm})\n{dataset}'
-                plt.annotate(label, 
-                           (cost, score),
-                           xytext=(10, 10),  # Increase text offset
-                           textcoords='offset points',
-                           fontsize=10,  # Increase font size
-                           bbox=dict(facecolor='white', edgecolor='none', alpha=0.8))
+# 绘制平均值
+colors = ['blue', 'red', 'green', 'purple', 'orange']
+for idx, row in avg_data.iterrows():
+    plt.scatter(row['Avg_Cost'], row['Avg_Score'], color=colors[idx % len(colors)], s=100, label=f"{row['Algorithm']} - {row['LLM']}")
+    plt.annotate(f"{row['Algorithm']}\n{row['LLM']}", 
+                 (row['Avg_Cost'], row['Avg_Score']),
+                 xytext=(10, 10),
+                 textcoords='offset points',
+                 fontsize=8,
+                 bbox=dict(facecolor='white', edgecolor='none', alpha=0.6))
 
-# Add legend
-plt.legend(title='Dataset-LLM', fontsize=12, title_fontsize=12)
+# 去掉图例
+# plt.legend(title='Algorithm - LLM', fontsize=12, title_fontsize=12)
 
-# Add title and labels
-plt.title('Score vs Cost', fontsize=14)
-plt.xlabel('Cost ($)', fontsize=14)
-plt.ylabel('Score', fontsize=14)
+# 添加标题和标签
+plt.title('Average Score vs Average Cost by Algorithm and LLM', fontsize=14)
+plt.xlabel('Average Cost ($)', fontsize=14)
+plt.ylabel('Average Score', fontsize=14)
 
-# Set tighter display range with log scale
-plt.xscale('log')  # Use log scale to expand 0-1 range
-plt.xlim(-0.01, max_cost * 1.2)  # Adjust x-axis to include all values, starting from 0.01 to avoid log(0)
+# 设置对数刻度
+plt.xscale('log')
+plt.xlim(-0.01, avg_data['Avg_Cost'].max() * 1.2)
 
-# Add vertical line to indicate the 1 cost mark
+# 添加垂直线以指示1成本标记
 plt.axvline(x=1, color='gray', linestyle='--', linewidth=1)
 
-# Set tick font size and format
+# 添加辅助线
+min_cost = avg_data['Avg_Cost'].min()
+max_cost = avg_data['Avg_Cost'].max()
+min_score = avg_data['Avg_Score'].min()
+max_score = avg_data['Avg_Score'].max()
+
+plt.plot([min_cost, max_cost], [max_score, min_score], color='gray', linestyle='--', linewidth=1, label='Ideal Line')
+
+# 设置刻度字体大小和格式
 plt.xticks(fontsize=12)
 plt.yticks(fontsize=12)
-plt.gca().xaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f'{x:.2f}'))  # Format x-axis values as 0.00x
+plt.gca().xaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f'{x:.2f}'))
 
-# Save figure
-plt.savefig('score_vs_cost11.png', dpi=300, bbox_inches='tight')
+# 保存图形
+plt.savefig('./figs/average_score_vs_cost_by_algorithm_llm.png', dpi=300, bbox_inches='tight')
 
-# Show figure
+# 显示图形
 plt.show()
