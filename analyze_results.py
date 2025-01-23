@@ -22,7 +22,7 @@ df = pd.read_csv('figs/record.csv')
 print("Column names:", df.columns.tolist())
 
 # Data cleaning
-df = df.dropna(subset=['Algorithm', 'dataset', 'llm'])  # Drop rows with missing values in key columns
+df = df.dropna(subset=['Algorithm', 'Dataset', 'LLM'])  # Drop rows with missing values in key columns
 
 # Check the actual name of the 'score' column
 score_column = 'Score'  # Use the actual column name
@@ -35,7 +35,7 @@ def create_operator_comparison(data, dataset_name, save_path):
     plt.figure(figsize=(15, 8))
     
     # Filter dataset and calculate average performance for each operator
-    dataset_data = data[data['dataset'] == dataset_name]
+    dataset_data = data[data['Dataset'] == dataset_name]
 
     # Add debug information
     if dataset_data.empty:
@@ -75,8 +75,8 @@ def create_llm_comparison(data, dataset_name, save_path):
     plt.figure(figsize=(15, 8))
     
     # Filter dataset and calculate average performance for each LLM
-    dataset_data = data[data['dataset'] == dataset_name]
-    llm_stats = dataset_data.groupby('llm')[score_column].agg(['mean', 'std', 'count']).sort_values('mean', ascending=True)
+    dataset_data = data[data['Dataset'] == dataset_name]
+    llm_stats = dataset_data.groupby('LLM')[score_column].agg(['mean', 'std', 'count']).sort_values('mean', ascending=True)
     
     # Create bar chart
     ax = plt.gca()
@@ -101,7 +101,7 @@ def create_llm_comparison(data, dataset_name, save_path):
 
 def print_dataset_statistics(data, dataset_name):
     """Print dataset statistics"""
-    dataset_data = data[data['dataset'] == dataset_name]
+    dataset_data = data[data['Dataset'] == dataset_name]
     
     print(f"\n{dataset_name} Dataset Statistics:")
     print("=" * 50)
@@ -117,7 +117,7 @@ def print_dataset_statistics(data, dataset_name):
     
     # LLM statistics
     print("\nLLM Performance:")
-    llm_stats = dataset_data.groupby('llm')[score_column].agg(['mean', 'std', 'count']).sort_values('mean', ascending=False)
+    llm_stats = dataset_data.groupby('LLM')[score_column].agg(['mean', 'std', 'count']).sort_values('mean', ascending=False)
     for llm, stats in llm_stats.iterrows():
         print(f"\n{llm}:")
         print(f"  Mean: {stats['mean']:.2f}%")
@@ -129,11 +129,11 @@ def create_operator_llm_comparison(data, dataset_name, save_path):
     plt.figure(figsize=(20, 10))
     
     # Filter dataset
-    dataset_data = data[data['dataset'] == dataset_name]
+    dataset_data = data[data['Dataset'] == dataset_name]
     
     # Get all operators and LLMs
     operators = dataset_data['Algorithm'].unique()
-    llms = dataset_data['llm'].unique()
+    llms = dataset_data['LLM'].unique()
     
     # Set parameters for grouped bar chart
     x = np.arange(len(operators))
@@ -148,7 +148,7 @@ def create_operator_llm_comparison(data, dataset_name, save_path):
         scores = []
         for op in operators:
             score = dataset_data[(dataset_data['Algorithm'] == op) & 
-                               (dataset_data['llm'] == llm)][score_column].values
+                               (dataset_data['LLM'] == llm)][score_column].values
             if len(score) > 0:
                 scores.append(score[0])  # Take actual score
             else:
@@ -189,10 +189,10 @@ def create_llm_operator_comparison(data, dataset_name, save_path):
     plt.figure(figsize=(20, 10))
     
     # Filter dataset
-    dataset_data = data[data['dataset'] == dataset_name]
+    dataset_data = data[data['Dataset'] == dataset_name]
     
     # Get all LLMs and operators
-    llms = dataset_data['llm'].unique()
+    llms = dataset_data['LLM'].unique()
     operators = dataset_data['Algorithm'].unique()
     
     # Set parameters for grouped bar chart
@@ -207,7 +207,7 @@ def create_llm_operator_comparison(data, dataset_name, save_path):
         # Get scores for each LLM under this operator
         scores = []
         for llm in llms:
-            score = dataset_data[(dataset_data['llm'] == llm) & 
+            score = dataset_data[(dataset_data['LLM'] == llm) & 
                                (dataset_data['Algorithm'] == op)][score_column].values
             if len(score) > 0:
                 scores.append(score[0])  # Take actual score
@@ -249,7 +249,7 @@ def create_overall_llm_comparison(data, save_path):
     plt.figure(figsize=(15, 8))
     
     # Calculate average performance for each LLM
-    llm_stats = data.groupby('llm')[score_column].agg(['mean', 'std', 'count']).sort_values('mean', ascending=True)
+    llm_stats = data.groupby('LLM')[score_column].agg(['mean', 'std', 'count']).sort_values('mean', ascending=True)
     
     # Check if llm_stats is empty
     if llm_stats.empty:
