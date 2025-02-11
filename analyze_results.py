@@ -315,7 +315,7 @@ if not os.path.exists('figs'):
     os.makedirs('figs')
 
 # Generate charts for each dataset
-datasets = ['gsm8k', 'AQuA']
+datasets = ['gsm8k', 'AQuA', 'MATH-500']
 for dataset in datasets:
     # Generate operator comparison chart for this dataset
     create_operator_comparison(

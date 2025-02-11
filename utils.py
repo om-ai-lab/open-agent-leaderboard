@@ -1,6 +1,5 @@
 from statistics import mean
 from torch.utils.data import Dataset
-import os
 import multiprocessing
 import json
 import numpy as np
@@ -11,6 +10,8 @@ import random
 import time
 import datetime
 import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 
 
 def fix_seed(seed):
@@ -50,6 +51,17 @@ def decoder_for_gpt(args, input, max_length, i, k):
     engine = engine_map.get(args.model)
     if engine is None:
         raise ValueError("Model is not properly defined ")
+    
+    retry_strategy = Retry(
+        total=3,  # 重试次数
+        status_forcelist=[429, 500, 502, 503, 504],  # 需要重试的状态码
+        allowed_methods=["HEAD", "GET", "OPTIONS", "POST"],  # 需要重试的方法
+        backoff_factor=1  # 重试间隔时间的增长因子
+    )
+    adapter = HTTPAdapter(max_retries=retry_strategy)
+    http = requests.Session()
+    http.mount("http://", adapter)
+    http.mount("https://", adapter)
     
     payload = {
         "model": engine,
@@ -127,7 +139,24 @@ def data_reader(args):
             for line in json_data:
                 questions.append(line["question"].strip())
                 answers.append(line["answer"].strip())
-                ids.append(line["_id"]) 
+                ids.append(line["_id"])
+                
+                
+    elif args.dataset == "mme_realworld_lite":
+        with open(args.dataset_path) as f:
+            json_data = json.load(f)
+            for line in json_data:
+                questions.append(line["Text"].strip())
+                answers.append(line["Ground truth"].strip())
+                ids.append(line["Question_id"])   
+    elif args.dataset == "math500":
+        with open(args.dataset_path) as f:
+            lines = f.readlines()
+            for line in lines:
+                json_res = decoder.raw_decode(line)[0]
+                questions.append(json_res["problem"].strip())
+                answers.append(json_res["answer"].strip())
+                ids.append(json_res["unique_id"].strip())
     else:
         raise ValueError("dataset is not properly defined ")
 
@@ -212,13 +241,15 @@ def answer_cleansing(args, pred):
             answer_flag = True if len(preds) > 1 else False
             pred = preds[-1]
 
-    if args.dataset in ("aqua", ):
+    if args.dataset in ("aqua", "mme_realworld_lite"):
         pred = re.findall(r"A|B|C|D|E", pred)
     elif args.dataset in ("gsm8k", ):
         pred = pred.replace(",", "")
         pred = [s for s in re.findall(r"-?\d+\.?\d*", pred)]
     elif args.dataset == "hotpotqa":
         pred = [pred]
+    elif args.dataset == "math500":
+        pred = [pred.split("Final Answer: ")[-1]]
     else:
         raise ValueError("dataset is not properly defined ")
 
@@ -398,6 +429,12 @@ def configure_dataset(args):
     elif args.dataset == "hotpotqa":
         args.dataset_path = "./dataset/hotpotqa/hotpot_dev_distractor_v1.json"
         args.direct_answer_trigger = "\nTherefore, the answer is"
+    elif args.dataset == "mme_realworld_lite":
+        args.dataset_path = "./dataset/mme_realworld_lite/MME-RealWorld-Lite.json"
+        args.direct_answer_trigger = "Select the best answer to the above multiple-choice question based on the image. \nRespond with only the letter (A, B, C, D, or E) of the correct option. \nThe best answer is:"
+    elif args.dataset == "math500":
+        args.dataset_path = "./dataset/MATH-500/test.jsonl"
+        args.direct_answer_trigger = "\nTherefore, the answer is"
     else:
         raise ValueError("dataset is not properly defined ")
 
@@ -462,6 +499,14 @@ def load_ground_truth(dataset_path: str, dataset_type: str) -> dict:
             json_data = json.load(f)
             for entry in json_data:
                 gt_data[entry["_id"]] = entry["answer"].strip()
+        elif dataset_type == "mme_realworld_lite":
+            json_data = json.load(f)
+            for entry in json_data:
+                gt_data[entry["Question_id"]] = entry["Ground truth"].strip()
+        elif dataset_type == "math500":
+            for line in f:
+                entry = json.loads(line)
+                gt_data[entry["unique_id"]] = entry["answer"].strip()
         else:
             raise ValueError("dataset type is not properly defined ...")
     return gt_data

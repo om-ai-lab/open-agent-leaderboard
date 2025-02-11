@@ -8,6 +8,8 @@ from evaluation.datasets.aqua import AQuAEvaluator
 from evaluation.datasets.hotpotqa import HotpotQaEvaluator
 from evaluation.metrics.pass_rate import PassRateEvaluator
 from evaluation.multi_evaluator import MultiEvaluator
+from evaluation.datasets.math import MATHEvaluator
+from evaluation.datasets.mme_realworld_lite import MMERealWorldLiteEvaluator
 
 
 def parse_and_print_args():
@@ -44,9 +46,13 @@ def handle_model_output(args, question, model_output, decoder):
     Returns:
         str: Cleaned model output.
     """
+    if not isinstance(model_output, str):
+        model_output = str(model_output)
     if args.method == "zero_shot_cot":
         model_output_postprocess = f"Question: {question}\nModel answer: {model_output} {args.direct_answer_trigger_for_zeroshot_cot}"
         model_output, _, _ = decoder.decode(args, model_output_postprocess, args.max_length_direct, 0, 2)
+    if args.dataset == "math500":
+        model_output = model_output.split("Final Answer: ")[-1] if "Final Answer: " in model_output else model_output
     return answer_cleansing(args, model_output)
 
 def process_predictions(pred_data, args, decoder, gt_data):
@@ -158,6 +164,8 @@ def main():
         "aqua": AQuAEvaluator(),
         "gsm8k": Gsm8kEvaluator(),
         "hotpotqa": HotpotQaEvaluator(),
+        "math500": MATHEvaluator(),
+        "mme_realworld_lite": MMERealWorldLiteEvaluator(),
     }.get(args.dataset)
 
     metric_evaluator = PassRateEvaluator()
@@ -281,6 +289,8 @@ def parse_arguments():
             "aqua",
             "gsm8k",
             "hotpotqa",
+            "math500",
+            "mme_realworld_lite",
         ],
         help="dataset used for experiment",
     )
@@ -352,8 +362,8 @@ def parse_arguments():
         help="agent used for experiment",
     )
     parser.add_argument("--system_prompt", type=str, default="", help="system prompt")
-    parser.add_argument("--openai_api_key", type=str, default="sk-4zr6uGzVbNfIiq7U513aCc94Af614792938cE9AdB7D0E295", help="openai api key")
-    parser.add_argument("--openai_url", type=str, default="http://36.133.246.107:11002/v1/chat/completions", help="openai url")
+    parser.add_argument("--openai_api_key", type=str, default="sk-xxx", help="openai api key")
+    parser.add_argument("--openai_url", type=str, default="https://api.openai.com/v1", help="openai url")
 
     args = parser.parse_args()
 
