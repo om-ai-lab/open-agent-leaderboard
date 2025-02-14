@@ -358,7 +358,7 @@ def parse_arguments():
         "--agent",
         type=str,
         default="cot",
-        choices=["cot", "pot", "sc_cot", "react", "dnc"],
+        choices=["cot", "pot", "sc_cot", "react", "dnc", "tot"],
         help="agent used for experiment",
     )
     parser.add_argument("--system_prompt", type=str, default="", help="system prompt")
