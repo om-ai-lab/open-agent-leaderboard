@@ -3,7 +3,7 @@
 </div>
 
 <p align="center">
-  <a href="https://huggingface.co/spaces/omlab/open-agent-leaderboard">🤗 HF Leaderboard</a> 
+  <a href="https://huggingface.co/spaces/omlab/open-agent-leaderboard">[🤗 HF Leaderboard]</a> 
   <a href="https://arxiv.org/abs/2505.24354">[📄 Paper]</a>
 </p>
 
@@ -45,6 +45,14 @@ Supported LLMs:
 - Llama-3.1-8B-Instruct
 - Internllm2_5-7B
 - deepseek-r1:1.5b
+
+
+## 🌟 Graph-based Workflow Orchestration Engine
+At the core of AGORA is a graph-based orchestration engine designed for modularity and scalability. As shown in the figure below, the system uses a Directed Acyclic Graph (DAG) where each node represents a task. Tasks are either simple tasks—developer-defined custom logic—or logical tasks—built-in control flows such as branching and looping.
+
+Built on the Conductor library, this engine provides visual representations of workflows, making agent behavior intuitive to trace and debug. It also supports asynchronous, distributed execution, which is ideal for managing long-running, complex agent workflows. 
+
+![image](figs/OPS5.png)
 
 ## 🏅 Leaderboards
 
@@ -464,6 +472,24 @@ LLM prices:
     - Cost is not considered in the leaderboard.
 
 Pass Rate\*: The pass rate is calculated by evaluating the percentage of predictions that are valid, where a prediction is valid if it is neither empty nor null.
+
+
+### Performance Comparison of Different Agents and VLMs on MME-RealWorld
+
+| ****Agent**** | ****VLMs****            | ****Score**** | ****Pass Rate**** | ****Total Input Tokens**** | ****Total Output Tokens**** | ****All Tokens**** |
+|:-------------:|:-----------------------:|:-------------:|:-----------------:|:--------------------------:|:---------------------------:|:------------------:|
+| **ZoomEye**   | Qwen2.5-VL-72B-Instruct | 51.56         | 99.81             | 76,808,965                 | 1,276,460                   | 78,085,425         |
+| **ZoomEye**   | Qwen2.5-VL-7B-Instruct  | 48.06         | 96.50             | 94,418,593                 | 1,472,836                   | 95,891,429         | 
+| **IO**        | Qwen2.5-VL-72B-Instruct | 44.47         | 100.00            | 6,174,490                  | 2,114                       | 6,176,604          |
+| **ZoomEye**   | InternVL2.5-8B          | 43.42         | 99.34             | 153,857,588                | 2,017,170                   | 155,874,758        |
+| **IO**        | InternVL2.5-8B          | 42.95         | 100.00            | 2,779,778                  | 2,335                       | 2,782,113          |
+| **IO**        | Qwen2.5-VL-7B-Instruct  | 42.86         | 100.00            | 6,174,490                  | 2,114                       | 6,176,604          |
+| **ZoomEye**   | Llava-v1.5-7B           | 31.60         | 98.86             | 113,073,261                | 1,368,724                   | 114,441,985        |
+| **IO**        | Llava-v1.5-7B           | 24.79         | 100.00            | 734,868                    | 17,036                      | 751,904            |
+| **V***        | seal_vqa & seal_vsm     | 15.14         | 72.37             | -                          | -                           | -                  |
+
+
+
 
 ### Compare to original agent repositories
 
