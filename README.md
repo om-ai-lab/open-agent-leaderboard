@@ -3,8 +3,8 @@
 </div>
 
 <p align="center">
-  <a href="https://huggingface.co/spaces/omlab/open-agent-leaderboard">🤗 HF Leaderboard
-  </a>
+  <a href="https://huggingface.co/spaces/omlab/open-agent-leaderboard">🤗 HF Leaderboard</a> 
+  <a href="https://arxiv.org/abs/2504.07615">[📄 Paper]</a>
 </p>
 
 ## 🎉 Updates
@@ -127,7 +127,7 @@ Evaluation details can be found in the [Evaluation Details](#evaluation-details)
 
 - ReAct-Pro\*: We modified ReAct to ReAct-Pro, following the [Reflexion](https://github.com/noahshinn/reflexion) repository. Comparasion with the original ReAct repo can be found in the [Compare to ReAct](#comparison-react-with-react-pro) section.
 
-![Leaderboard Visualization](figs/average_score_vs_cost_by_algorithm_llm.png)
+![Leaderboard Visualization](figs/average_score_vs_cost_by_algorithm_llm_2.png)
 
 ## 🛠️ How to Install
 
