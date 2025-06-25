@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://huggingface.co/spaces/omlab/open-agent-leaderboard">🤗 HF Leaderboard</a> 
-  <a href="https://arxiv.org/abs/2504.07615">[📄 Paper]</a>
+  <a href="https://arxiv.org/abs/2505.24354">[📄 Paper]</a>
 </p>
 
 ## 🎉 Updates
