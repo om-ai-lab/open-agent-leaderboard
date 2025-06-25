@@ -9,6 +9,7 @@
 
 ## 🎉 Updates
 
+- 2025/5/23: The paper "Unifying Language Agent Algorithms with Graph-based Orchestration Engine for Reproducible Agent Research" was accepted to ACL 2025 Systems Demonstration Track.🎉
 - 2025/2/11: Add deepseek-r1:1.5b, a new dataset MATH-500, and a new algorithm ToT into the leaderboard.
 - 2025/1/23: Add gpt-4o, Qwen2.5-72B-Instruct, Qwen2.5-7B-Instruct, Qwen2-1.5B-Instruct, Qwen2-0.5B-Instruct, Llama-3.3-70B-Instruct, Llama-3.1-8B-Instruct, Internllm2_5-7B into the leaderboard.
 - 2025/1/07: The Open Agent Leaderboard is released.
